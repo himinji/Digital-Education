@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>디지털교육 A반 수업 자료</title>
+    
+    <!-- Pretendard Font ONLY -->
+    <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+
+    <style>
+        /* 1. CSS Variables & Colors */
+        :root {
+            --colors-primary: #0066cc;
+            --colors-canvas: #ffffff;
+            --colors-canvas-parchment: #f9f9fb;
+            --colors-placeholder-bg: #e5e5ea;
+            --colors-ink: #1d1d1f;
+            --colors-body-muted: #86868b;
+            --colors-success: #34c759;
+            --colors-checking: #ffcc00;
+            --colors-accent: #ff3b30;
+        }
+
+        /* 2. Typography & Reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Pretendard', sans-serif;
+        }
+
+        body {
+            background-color: #2c2c2e;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Typography Classes */
+        .type-chapter { font-size: 24px; font-weight: 600; line-height: 1.0; letter-spacing: 0.5px; color: var(--colors-primary); }
+        .type-slide-title { font-size: 56px; font-weight: 700; line-height: 1.1; letter-spacing: -0.5px; color: var(--colors-ink); }
+        .type-subtitle { font-size: 28px; font-weight: 400; line-height: 1.4; letter-spacing: -0.2px; color: var(--colors-body-muted); }
+        .type-body-strong { font-size: 24px; font-weight: 700; line-height: 1.5; letter-spacing: -0.3px; color: var(--colors-ink); }
+        .type-body { font-size: 22px; font-weight: 400; line-height: 1.5; letter-spacing: -0.3px; color: var(--colors-ink); }
+        .type-caption { font-size: 16px; font-weight: 400; line-height: 1.4; letter-spacing: -0.1px; color: var(--colors-body-muted); }
+        .type-fine-print { font-size: 16px; font-weight: 500; line-height: 1.2; letter-spacing: 0px; color: var(--colors-body-muted); }
+
+        /* 3. Layout & Slide Architecture */
+        #presentation-container {
+            width: 100vw;
+            height: 100vh;
+            max-width: calc(100vh * (16 / 9));
+            max-height: calc(100vw * (9 / 16));
+            aspect-ratio: 16 / 9;
+            background-color: var(--colors-canvas);
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+        }
+
+        .slide {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            position: absolute;
+            top: 0; left: 0;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.4s ease-in-out;
+            background-color: var(--colors-canvas);
+        }
+
+        .slide.active {
+            opacity: 1;
+            pointer-events: auto;
+            z-index: 10;
+        }
+
+        /* A. The Frozen Header Area */
+        .slide-header {
+            flex: 0 0 auto;
+            padding: 6% 6% 0 6%;
+            height: 28%;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+        }
+
+        .slide-header .type-chapter { margin-bottom: 16px; }
+        .slide-header .type-slide-title { margin-bottom: 12px; }
+
+        /* B. The Creative Content Area */
+        .slide-content {
+            flex: 1 1 auto;
+            min-height: 0;
+            padding: 0 6% 60px 6%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        /* Grid Layouts inside Content Area */
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+            align-content: center;
+        }
+
+        .card-grid-2col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 32px;
+            align-content: center;
+        }
+
+        /* C. Card & Placeholder Styles */
+        .card {
+            background: var(--colors-canvas-parchment);
+            border-radius: 16px;
+            padding: 32px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            height: auto;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);
+            border: 1px solid rgba(0, 0, 0, 0.04);
+        }
+
+        .image-placeholder {
+            background-color: var(--colors-placeholder-bg);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            min-height: 340px;
+            height: auto;
+            text-align: center;
+            /* padding: 32px; */
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+            flex-direction: column;
+        }
+
+        /* Custom Interactive Card Styles for Lower Level */
+        .interactive-cards {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            width: 100%;
+        }
+        
+        .flip-card {
+            width: 60px;
+            height: 90px;
+            background: var(--colors-primary);
+            color: white;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        
+        .flip-card.flipped {
+            background: white;
+            color: var(--colors-ink);
+            border: 2px solid var(--colors-primary);
+            transform: scale(1.1);
+        }
+        .flip-card.discarded {
+            opacity: 0.2;
+            transform: scale(0.9);
+            background: #ccc;
+            border: none;
+            color: #666;
+        }
+
+        /* Simulation Styles */
+        .sim-container { display: flex; flex-direction: column; gap: 24px; justify-content: center; }
+        .sim-row { display: flex; flex-direction: column; gap: 12px; }
+        .sim-boxes { display: flex; gap: 8px; width: 100%; height: 60px; }
+        .sim-box {
+            flex: 1; border-radius: 8px; background: var(--colors-placeholder-bg);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 16px; font-weight: 600; color: var(--colors-ink);
+            transition: all 0.3s ease;
+        }
+        .sim-box.checking { background: var(--colors-checking); transform: scale(1.1); box-shadow: 0 4px 10px rgba(0,0,0,0.1); color: #000; z-index: 2; }
+        .sim-box.eliminated { opacity: 0.2; background: #e0e0e0; transform: scale(0.95); }
+        .sim-box.found { background: var(--colors-success); color: white; transform: scale(1.1); box-shadow: 0 4px 15px rgba(52,199,89,0.4); z-index: 2; }
+        .btn-primary { align-self: flex-start; background: var(--colors-primary); color: white; border: none; padding: 12px 24px; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer; transition: opacity 0.2s; }
+        .btn-primary:hover { opacity: 0.9; }
+
+        /* 6. Persistent Bottom UI */
+        #progress-track { position: absolute; bottom: 0; left: 0; width: 100%; height: 6px; background-color: rgba(0, 102, 204, 0.1); z-index: 20; }
+        #progress-bar { height: 100%; background-color: var(--colors-primary); transition: width 0.3s ease; }
+        .page-indicator { position: absolute; bottom: 24px; right: 6%; z-index: 20; background: rgba(255, 255, 255, 0.8); padding: 4px 12px; border-radius: 12px; backdrop-filter: blur(4px); }
+    </style>
+</head>
+<body>
+
+<div id="presentation-container">
+
+    <!-- 슬라이드 1: 도입 (주의 획득) -->
+    <div class="slide active">
+        <div class="slide-header">
+            <div class="type-chapter">01</div>
+            <div class="type-slide-title">0.1초 만에 데이터를 찾는 마법 ✨</div>
+            <div class="type-subtitle">두꺼운 책에서 친구 이름을 가장 빨리 찾는 방법은?</div>
+        </div>
+        <div class="slide-content">
+            <div class="card-grid">
+                <!-- <div class="image-placeholder">
+                    <p class="type-caption">[Image Placeholder: 교탁 위에 놓인 매우 두껍고 무거운 전교생 명단 책자 사진. 절반이 찢겨나간 듯한 역동적인 시각 자료면 더 좋습니다.]</p>
+                </div> -->
+                <img src="./A.png" alt="교탁 위에 놓인 매우 두껍고 무거운 전교생 명단 책자 사진." class="image-placeholder">
+                <div class="card" style="justify-content: center; gap: 16px;">
+                    <p class="type-body-strong" style="color: var(--colors-primary); font-size: 28px;">"이러면 며칠이 걸리겠죠?"</p>
+                    <p class="type-body">첫 장부터 한 장씩 넘기면 너무 오래 걸립니다.</p>
+                    <p class="type-body"><strong>책의 절반을 과감하게 찢어서 버리면 어떨까요?</strong></p>
+                    <p class="type-caption" style="margin-top: 16px;">순식간에 종이 한 장만 남는 엄청난 속도 차이를 두 눈으로 확인해봅시다!</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 슬라이드 2: 학습목표 -->
+    <div class="slide">
+        <div class="slide-header">
+            <div class="type-chapter">02</div>
+            <div class="type-slide-title">학습 목표 🎯</div>
+            <div class="type-subtitle">다 함께 큰 소리로 읽어봅시다!</div>
+        </div>
+        <div class="slide-content">
+            <div class="card" style="text-align: center; gap: 24px; padding: 48px;">
+                <p class="type-body-strong" style="font-size: 32px;">1. 선형 데이터 구조에서 특정 요소를 찾을 때 사용되는 두 가지 방법인<br><span style="color: var(--colors-primary);">순차 탐색</span>과 <span style="color: var(--colors-primary);">이진 탐색</span>의 과정을 구체적인 예시를 들어 설명할 수 있다.</p>
+                <p class="type-body-strong" style="font-size: 32px;">2. 주어진 자료가 일정한 기준에 따라 <span style="color: var(--colors-primary);">정렬되어 있는지 확인</span>하고, 데이터를 찾는 데<br>필요한 탐색 횟수를 직접 계산하여, 두 탐색 방법의 <span style="color: var(--colors-primary);">효율성을 비교</span>할 수 있다.</p>
+                <p class="type-body-strong" style="font-size: 32px;">3. 일상생활의 문제 상황이 주어졌을 때, 두 가지 탐색 방법 중 <span style="color: var(--colors-primary);">상황에 적합한<br>탐색 방법을 선택</span>하고, 데이터를 찾아가는 과정을 <span style="color: var(--colors-primary);">단계별로 분석하여 요약</span>할 수 있다.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 슬라이드 3: 선수학습 점검 -->
+    <div class="slide">
+        <div class="slide-header">
+            <div class="type-chapter">03</div>
+            <div class="type-slide-title">어느 책장이 찾기 쉬울까요? 🤔</div>
+            <div class="type-subtitle">어렵게 생각할 거 없어요! 두 사진을 직관적으로 비교해봐요 ☺️</div>
+        </div>
+        <div class="slide-content">
+            <div class="card-grid-2col">
+                <div style="display: flex; flex-direction: column; gap: 16px;">
+                    <!-- <div class="image-placeholder">
+                        <p class="type-caption">[Image Placeholder: 책의 높낮이와 색상이 뒤죽박죽으로 섞여 있어 어지러운 책장의 모습]</p>
+                    </div> -->
+                    <img src="./B_보충.png" alt="책의 높낮이와 색상이 뒤죽박죽으로 섞여 있어 어지러운 책장의 모습" class="image-placeholder">
+                    <p class="type-body-strong" style="text-align: center; color: var(--colors-accent);">뒤죽박죽 섞여 있는 책장</p>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 16px;">
+                    <!-- <div class="image-placeholder" style="background-color: rgba(0, 102, 204, 0.1); border: 2px solid var(--colors-primary);">
+                        <p class="type-caption">[Image Placeholder: 가나다순 혹은 크기순으로 아주 깔끔하게 정리된 책장의 모습]</p>
+                    </div> -->
+                    <img src="./C.png" alt="가나다순 혹은 크기순으로 아주 깔끔하게 정리된 책장의 모습" class="image-placeholder">
+                    <p class="type-body-strong" style="text-align: center; color: var(--colors-primary);">가나다순으로 잘 정리된 책장(정렬)</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 슬라이드 4: 시각화 시뮬레이션 -->
+    <div class="slide">
+        <div class="slide-header">
+            <div class="type-chapter">04</div>
+            <div class="type-slide-title">눈으로 확인하는 속도 차이 🏎️</div>
+            <div class="type-subtitle">어떤 알고리즘이 숫자 13을 더 빠르게 찾을까요?</div>
+        </div>
+        <div class="slide-content">
+            <div class="sim-container">
+                
+                <div class="sim-row">
+                    <p class="type-body-strong">1. 순차 탐색 (처음부터 1칸씩)</p>
+                    <div class="sim-boxes" id="seq-boxes"></div>
+                </div>
+
+                <div class="sim-row" style="margin-top: 24px;">
+                    <p class="type-body-strong">2. 이진 탐색 (가운데 확인 후 <span style="color: var(--colors-primary);">절반 버리기</span>)</p>
+                    <div class="sim-boxes" id="bin-boxes"></div>
+                </div>
+
+                <button class="btn-primary" onclick="runSimulation()">시뮬레이션 시작</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 슬라이드 5: 학습 안내 및 청킹송 + 교구 시연 -->
+    <div class="slide">
+        <div class="slide-header">
+            <div class="type-chapter">05</div>
+            <div class="type-slide-title">순처차, 이정중반! 🎶</div>
+            <div class="type-subtitle">선생님과 함께 노래를 따라부르고, PPT의 카드를 함께 뒤집어봐요!</div>
+        </div>
+        <div class="slide-content">
+            <div class="card-grid">
+                <div class="card">
+                    <p class="type-body-strong" style="margin-bottom: 20px; color: var(--colors-primary);">순처차, 이정중반! 🎵</p>
+                    <!-- Audio Track Placeholder -->
+                    <audio controls style="width: 100%; margin-bottom: 20px;">
+                        <source src="./song.mp3" type="audio/mp3">
+                    </audio>
+                    <p class="type-body" style="margin-bottom: 12px; font-size: 26px;"><strong>순! 처! 차!</strong><br><span style="font-size: 20px;">순차 탐색은 처음부터 차례대로!</span></p>
+                    <p class="type-body" style="font-size: 26px;"><strong>이! 정! 중! 반!</strong><br><span style="font-size: 20px;">이진 탐색은 정렬 확인, 중간부터 반씩 버려!</span></p>
+                </div>
+                
+                <div class="card" style="align-items: center; justify-content: center; gap: 20px;">
+                    <p class="type-body-strong">숫자 6을 찾아볼까요?</p>
+                    <!-- 인터랙티브 카드 요소 (클릭 시 뒤집힘) -->
+                    <div class="interactive-cards" id="interactive-cards">
+                        <div class="flip-card" onclick="flipCard(this, 1)">?</div>
+                        <div class="flip-card" onclick="flipCard(this, 2)">?</div>
+                        <div class="flip-card" onclick="flipCard(this, 3)">?</div>
+                        <div class="flip-card" onclick="flipCard(this, 4)">?</div>
+                        <div class="flip-card" onclick="flipCard(this, 5)">?</div>
+                        <div class="flip-card" onclick="flipCard(this, 6)">?</div>
+                        <div class="flip-card" onclick="flipCard(this, 7)">?</div>
+                    </div>
+                    <p class="type-caption">카드를 클릭해서 뒤집어보세요.</p>
+                    <button class="btn-primary" style="align-self: center;" onclick="resetCards()">다시 덮기</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 슬라이드 6: 수행 유도 실습 -->
+    <div class="slide">
+        <div class="slide-header">
+            <div class="type-chapter">06</div>
+            <div class="type-slide-title">숫자 카드 뒤집기 게임! 🎮</div>
+            <div class="type-subtitle">서로 교대로 카드를 뒤집으며 쓸모없는 절반을 치워봐요!</div>
+        </div>
+        <div class="slide-content">
+            <div class="card-grid-2col">
+                <!-- <div class="image-placeholder">
+                    <p class="type-caption">[Image Placeholder: 두 학생이 마주앉아 책상 위에 오름차순으로 정렬된 숫자카드 7장을 엎어두고, 한 학생이 4번째(가운데) 카드를 뒤집고 있는 모습]</p>
+                </div> -->
+                <img src="./D.png" alt="두 학생이 마주앉아 책상 위에 오름차순으로 정렬된 숫자카드 7장을 엎어두고, 한 학생이 4번째(가운데) 카드를 뒤집고 있는 모습" class="image-placeholder">
+                <div class="card" style="gap: 20px;">
+                    <p class="type-body-strong" style="color: var(--colors-primary);">게임 규칙 📌</p>
+                    <p class="type-body">1. 정렬된 카드 7장을 안 보이게 엎어둬요 </p>
+                    <p class="type-body">2. <strong>친구 1명은 "순처차!"</strong><br>&nbsp;&nbsp;&nbsp;&nbsp;첫 번째 카드부터 차례대로 뒤집어요</p>
+                    <p class="type-body">3. <strong>친구 1명은 "이정중반!"</strong><br>&nbsp;&nbsp;&nbsp;&nbsp;4번째(중간) 카드부터 뒤집고, 쓸모없는 절반의 카드를 옆으로 밀어서 치워버려요!</p>
+                    <p class="type-body-strong" style="margin-top: 10px;">누가 더 빨리 찾았나요? 활동지에 횟수를 기록해봐요 📝</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 슬라이드 7: 실생활 적용 (매칭 활동) -->
+    <div class="slide">
+        <div class="slide-header">
+            <div class="type-chapter">07</div>
+            <div class="type-slide-title">알고리즘, 우리 주변에 숨어있다 👀</div>
+            <div class="type-subtitle">짝꿍과 함께 상황에 알맞은 탐색 방법을 선으로 연결하고, 카드의 순서를 맞춰봐요!</div>
+        </div>
+        <div class="slide-content">
+            <div class="card-grid-2col">
+                <div class="card" style="justify-content: space-around;">
+                    <p class="type-body-strong">상황 1. 🌂 뒤죽박죽 분실물 우산 보관함</p>
+                    <!-- <p class="type-body">➔ 정렬되어 있지 않아요!<br>➔ <strong>"순처차!" (순차 탐색)</strong></p> -->
+                    <!-- <hr style="border: 0; border-top: 1px dashed var(--colors-placeholder-bg);"> -->
+                    <p class="type-body-strong">상황 2. 📖 가나다순으로 정리된 국어사전</p>
+                    <p class="type-body-strong">상황 3. 🍬 무작위로 섞여있는 사탕 바구니</p>
+                    <p class="type-body">모두 연결했다면, 선생님이 나눠준<br>과정 설명 카드의 순서도 함께 맞춰봐요 🃏</p>
+                    <!-- <p class="type-body">➔ 줄이 잘 서 있어요 (정렬 됨!)<br>➔ <strong>"이정중반!" (이진 탐색)</strong></p> -->
+                </div>
+                <!-- <div class="image-placeholder">
+                    <p class="type-caption">[Image Placeholder: 하 수준 학생용 그림 활동지. 왼쪽에 어지러운 우산더미 그림과 정렬된 사전 그림이 있고, 오른쪽에 '순차 탐색', '이진 탐색' 글씨가 있어 학생이 알맞게 선 긋기를 한 화면]</p>
+                </div> -->
+                <img src="./E.png" alt="왼쪽에 어지러운 우산더미 그림과 정렬된 사전 그림이 있고, 오른쪽에 '순차 탐색', '이진 탐색' 글씨가 있는 활동지" class="image-placeholder">
+            </div>
+        </div>
+    </div>
+
+    <!-- 슬라이드 8: 파지 및 전이 -->
+    <div class="slide">
+        <div class="slide-header">
+            <div class="type-chapter">08</div>
+            <div class="type-slide-title">배운 내용 정리하기 📚</div>
+            <div class="type-subtitle">순차 탐색과 이진 탐색 중 무엇이 일반적으로 더 빨랐나요?</div>
+        </div>
+        <div class="slide-content">
+            <div class="card-grid-2col">
+                <div class="card" style="text-align: center; gap: 24px; padding: 48px;">
+                    <p class="type-body-strong" style="font-size: 32px;">이진 탐색의 핵심!</p>
+                    
+                    <div style="display: flex; justify-content: center; gap: 40px; margin: 20px 0;">
+                        <span style="font-size: 48px; font-weight: 700; color: var(--colors-primary); background: #e3f2fd; padding: 20px 40px; border-radius: 16px;">중간</span>
+                        <span style="font-size: 48px; font-weight: 700; color: var(--colors-primary); background: #e3f2fd; padding: 20px 40px; border-radius: 16px;">절반</span>
+                    </div>
+
+                    <p class="type-body">실제 컴퓨터 프로그램을 만드는 개발자들도<br>에러를 찾을 때 <strong>코드를 절반씩 지워가며</strong> 테스트한답니다!</p>
+                </div>
+                <!-- <div class="image-placeholder">
+                    <p class="type-caption">[Image Placeholder: 하 수준 학생용 그림 활동지. 왼쪽에 어지러운 우산더미 그림과 정렬된 사전 그림이 있고, 오른쪽에 '순차 탐색', '이진 탐색' 글씨가 있어 학생이 알맞게 선 긋기를 한 화면]</p>
+                </div> -->
+                <img src="./F.png" alt="수천 줄의 코드가 띄워진 모니터 화면. 개발자가 에러를 찾기 위해 코드를 반씩 지워가며 테스트하는 모습(디버깅)을 보여주는 분할 샷" class="image-placeholder">
+            </div>
+        </div>
+    </div>
+
+    <!-- 슬라이드 9: 차시 예고 -->
+    <div class="slide">
+        <div class="slide-header">
+            <div class="type-chapter">09</div>
+            <div class="type-slide-title">다음 시간에 만나요! 👋</div>
+            <div class="type-subtitle">스스로의 성취도를 점검하고 다음 시간을 준비해봐요!</div>
+        </div>
+        <div class="slide-content" style="align-items: center; text-align: center; padding-bottom: 0px;">
+            <p class="type-slide-title" style="color: var(--colors-primary); margin-bottom: 24px;">다음 시간: 단원 복습 및 형성평가</p>
+            <p class="type-body" style="margin-bottom: 40px; color: var(--colors-body-muted);">드디어 이 단원의 마지막 시간입니다. 모두 수고하셨어요!</p>
+            
+            <div class="card" style="width: 100%; max-width: 600px; text-align: center;">
+                <p class="type-body-strong" style="margin-bottom: 12px;">마무리 미션</p>
+                <p class="type-body">활동지 맨 뒷장의 빈칸을 잊지 말고 채워주세요 😉</p>
+            </div>
+        </div>
+        <p class="type-body" style="margin-bottom: 10px; align-items: center; text-align: center; color: var(--colors-body-muted);">본 자료의 이미지는 구글 AI로 생성되었으며,<br>파일 내부에 AI 생성 콘텐츠임을 나타내는 고유한 디지털 워터마크(SynthID)가 포함되어 있습니다.</p>
+    </div>
+
+    <!-- 6. 하단 유틸리티 바 -->
+    <div id="progress-track">
+        <div id="progress-bar"></div>
+    </div>
+    <div class="page-indicator type-fine-print"><span id="current-page">1</span> / <span id="total-pages">9</span></div>
+
+</div>
+
+<script>
+    // 1. Slide Navigation Logic
+    const slides = document.querySelectorAll('.slide');
+    const totalPages = slides.length;
+    let currentIndex = 0;
+
+    const progressBar = document.getElementById('progress-bar');
+    const currentPageSpan = document.getElementById('current-page');
+    document.getElementById('total-pages').textContent = totalPages;
+
+    function updatePresentation() {
+        slides.forEach((slide, index) => {
+            slide.classList.remove('active');
+            if (index === currentIndex) {
+                slide.classList.add('active');
+            }
+        });
+        
+        const progressWidth = ((currentIndex + 1) / totalPages) * 100;
+        progressBar.style.width = `${progressWidth}%`;
+        currentPageSpan.textContent = currentIndex + 1;
+    }
+
+    // Keyboard controls
+    window.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'Enter') {
+            if (currentIndex < totalPages - 1) {
+                currentIndex++;
+                updatePresentation();
+            }
+        } else if (e.key === 'ArrowLeft') {
+            if (currentIndex > 0) {
+                currentIndex--;
+                updatePresentation();
+            }
+        }
+    });
+
+    // Mouse click controls
+    document.getElementById('presentation-container').addEventListener('click', (e) => {
+        // Prevent click navigation if clicking inside a card, button, audio, or flip-card
+        if (e.target.closest('button') || e.target.closest('audio') || e.target.closest('.card') || e.target.closest('.flip-card')) return;
+
+        const containerWidth = window.innerWidth;
+        const clickX = e.clientX;
+        if (clickX > containerWidth / 2) {
+            if (currentIndex < totalPages - 1) { currentIndex++; updatePresentation(); }
+        } else {
+            if (currentIndex > 0) { currentIndex--; updatePresentation(); }
+        }
+    });
+
+    // Initialize layout (발표.html 임베드용: 'index.html#5' 처럼 해시로 특정 페이지 열기)
+    const _hp = parseInt(location.hash.replace('#',''),10);
+    if (_hp >= 1 && _hp <= totalPages) currentIndex = _hp - 1;
+    updatePresentation();
+
+
+    // 2. JS Simulation Logic (Slide 4)
+    const arrayData = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
+    const TARGET = 13;
+    let isAnimating = false;
+
+    const seqContainer = document.getElementById('seq-boxes');
+    const binContainer = document.getElementById('bin-boxes');
+
+    function createBoxes(container) {
+        container.innerHTML = '';
+        arrayData.forEach(num => {
+            const box = document.createElement('div');
+            box.classList.add('sim-box');
+            box.textContent = num;
+            container.appendChild(box);
+        });
+    }
+
+    createBoxes(seqContainer);
+    createBoxes(binContainer);
+
+    const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+    async function runSimulation() {
+        if (isAnimating) return;
+        isAnimating = true;
+
+        // Reset
+        createBoxes(seqContainer);
+        createBoxes(binContainer);
+        const seqBoxes = seqContainer.children;
+        const binBoxes = binContainer.children;
+        await sleep(500);
+
+        // 순차 탐색을 먼저 실행하고 끝날 때까지 기다립니다.
+        await runSequentialSearch(seqBoxes);
+
+        await sleep(100);
+
+        // 순차 탐색이 완료된 후 이진 탐색을 실행하고 끝날 때까지 기다립니다.
+        await runBinarySearch(binBoxes);
+
+        isAnimating = false;
+    }
+
+    async function runSequentialSearch(boxes) {
+        for(let i = 0; i < arrayData.length; i++) {
+            boxes[i].classList.add('checking');
+            await sleep(250); 
+            
+            if (arrayData[i] === TARGET) {
+                boxes[i].classList.replace('checking', 'found');
+                break;
+            } else {
+                boxes[i].classList.replace('checking', 'eliminated');
+            }
+        }
+    }
+
+    async function runBinarySearch(boxes) {
+        let low = 0;
+        let high = arrayData.length - 1;
+
+        while (low <= high) {
+            let mid = Math.floor((low + high) / 2);
+            boxes[mid].classList.add('checking');
+            
+            await sleep(600); 
+
+            if (arrayData[mid] === TARGET) {
+                boxes[mid].classList.replace('checking', 'found');
+                break;
+            } else if (arrayData[mid] < TARGET) {
+                for(let i = low; i <= mid; i++) {
+                    boxes[i].classList.remove('checking');
+                    boxes[i].classList.add('eliminated');
+                }
+                low = mid + 1;
+            } else {
+                for(let i = mid; i <= high; i++) {
+                    boxes[i].classList.remove('checking');
+                    boxes[i].classList.add('eliminated');
+                }
+                high = mid - 1;
+            }
+            await sleep(400);
+        }
+    }
+
+    // 3. Interactive Card Logic (Slide 5)
+    let cardTarget = 6;
+    function flipCard(element, num) {
+        if(element.classList.contains('flipped') || element.classList.contains('discarded')) return;
+        
+        element.classList.add('flipped');
+        element.textContent = num;
+        
+        // 하 수준 학생들이 절반을 버리는 것을 직관적으로 보도록, 
+        // 4번째 카드(숫자 4)를 뒤집었을 때 타겟(6)보다 작으면 앞쪽 카드를 회색(discarded) 처리
+        // if(num === 4 && cardTarget === 6) {
+        //     setTimeout(() => {
+        //         const cards = document.getElementById('interactive-cards').children;
+        //         for(let i=0; i<=3; i++) {
+        //             cards[i].classList.add('discarded');
+        //         }
+        //     }, 600);
+        // }
+    }
+
+    function resetCards() {
+        const cards = document.getElementById('interactive-cards').children;
+        for(let i=0; i<cards.length; i++) {
+            cards[i].classList.remove('flipped', 'discarded');
+            cards[i].textContent = '?';
+        }
+    }
+</script>
+
+</body>
+</html>
